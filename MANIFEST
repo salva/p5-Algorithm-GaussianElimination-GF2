@@ -1,0 +1,6 @@
+Changes
+Makefile.PL
+MANIFEST
+README
+t/Algorithm-GaussianElimination-GF2.t
+lib/Algorithm/GaussianElimination/GF2.pm

@@ -1,0 +1,6 @@
+Revision history for Perl extension Algorithm::GaussianElimination::GF2.
+
+0.01  Wed Nov 30 17:13:48 2011
+	- original version; created by h2xs 1.23 with options
+		-AXn Algorithm::GaussianElimination::GF2
+
