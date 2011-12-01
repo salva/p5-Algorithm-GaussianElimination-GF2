@@ -42,6 +42,7 @@ for my $ix (0..$len-1) {
 }
 
 my ($sol, @base0) = $a->solve;
+
 if ($sol) {
     my @sol = @$sol;
     while (@sol) {

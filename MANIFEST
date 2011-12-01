@@ -1,6 +1,8 @@
 Changes
+lib/Algorithm/GaussianElimination/GF2.pm
 Makefile.PL
 MANIFEST
 README
+samples/lights_on.pl
 t/Algorithm-GaussianElimination-GF2.t
-lib/Algorithm/GaussianElimination/GF2.pm
+t/pods.t

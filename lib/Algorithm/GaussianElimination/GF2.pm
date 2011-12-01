@@ -94,7 +94,7 @@ sub solve {
     }
     for my $i (0..$len - 1) {
         unless (defined $sol[$i]) {
-            push $i, @free;
+            push @free, $i;
             $sol[$i] = 0;
         }
     }
@@ -156,6 +156,8 @@ sub b {
     return $self->[1];
 }
 
+sub len { shift->[2] }
+
 sub dump {
     my $self = shift;
     my $last = $self->[2] - 1;
@@ -197,13 +199,25 @@ Algorithm::GaussianElimination::GF2 - Solve linear systems of equations on GF(2)
 =head1 DESCRIPTION
 
 This module implements a variation of the Gaussian Elimination
-algorithm over GF(2).
+algorithm that allows to solve systems of linear equations over GF(2).
 
-=head2 API
+=head2 Algorithm::GaussianElimination::GF2 methods
 
 Those are the interesting methods:
 
 =over 4
+
+=item $age = Algorithm::GaussianElimination::GF2->new;
+
+=item $eq = $age->add_equation(@a, $b)
+
+=item $eq = $age->add_equation()
+
+Creates and adds a new equation to the algorithm.
+
+The return value is a reference to the equation object that can be
+used to change the equation coeficients before calling the C<solve>
+method.
 
 =item ($sol, @base0) = $age->solve
 
@@ -211,42 +225,70 @@ Those are the interesting methods:
 
 This method solves the system of equations.
 
-If it is unsolvable returns an empty list.
+When the system is inconsistent it returns an empty list.
 
-If is is solvable and deterministic returns and array reference containing the solution
+When the system is consistent and uniquely determined it returns the
+solution as an array reference.
 
-If it is solvable and undeterministic it returns one solution and a base to the vector space of the null system.
+When the system is consistent and underdetermined it returns one
+solution as an array reference and a base of the vector space formed
+by the solutions of the homogeneous system. In scalar context, only
+the solution vector is returned.
 
 =back
 
-=head2 EXPORT
+=head2 Algorithm::GaussianElimination::GF2::Equation methods
 
-None by default.
+Those are the methods available to manipulate the equation objects:
 
+=over 4
 
+=item $a = $eq->a($ix)
+
+=item $eq->a($ix, $a)
+
+Retrieves or sets the value of the equation coeficient at the given
+index.
+
+=item $b = $eq->b
+
+=item $eq->b($b)
+
+Retrieves or sets the value of the constant term of the equation.
+
+=item $eq->len
+
+Returns the internal length of the coeficients vector.
+
+Note that this value is just a hint as the internal representation
+grows transparently when new coeficients are set or inside the
+C<solve> method.
+
+=back
 
 =head1 SEE ALSO
 
-Mention other useful documentation such as the documentation of
-related modules or operating system documentation (such as man pages
-in UNIX), or any relevant external documentation such as RFCs or
-standards.
+The Wikipedia page about systems of linear equations:
+L<http://en.wikipedia.org/wiki/System_of_linear_equations>.
 
-If you have a mailing list set up for your module, mention it here.
+The Wikipedia page about the Galois Field of two elements GF(2):
+L<http://en.wikipedia.org/wiki/GF%282%29>.
 
-If you have a web site set up for your module, mention it here.
+The Wikipedia page about the Gaussian Elimination algorithm:
+L<http://en.wikipedia.org/wiki/Gaussian_elimination>.
 
-=head1 AUTHOR
+The inception of this module lays on this PerlMonks post:
+L<http://perlmonks.org/?node_id=940327>.
 
-Salvador Fandino, E<lt>salva@E<gt>
+L<Math::FastGF2> implements a much richer and faster set of operations
+for GF(2).
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2011 by Salvador Fandino
+Copyright (C) 2011 by Salvador FandiE<ntilde>o (sfandino@yahoo.com)
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.14.2 or,
 at your option, any later version of Perl 5 you may have available.
-
 
 =cut
