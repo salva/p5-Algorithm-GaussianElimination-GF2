@@ -165,6 +165,23 @@ sub dump {
     print "@a | $self->[1]\n";
 }
 
+sub test_solution {
+    my $self = shift;
+    my $v = $self->[0];
+    my $len = $self->[2];
+    my $b = 0;
+    for my $ix (0..$#_) {
+        $b += vec($v, $ix, 1) if $_[$ix];
+    }
+    return ($b == $self->[1]);
+}
+
+sub clone {
+    my $self = shift;
+    my @self = @$self;
+    bless \@self, ref $self;
+}
+
 1;
 __END__
 
