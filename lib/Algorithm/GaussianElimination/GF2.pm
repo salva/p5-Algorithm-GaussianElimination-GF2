@@ -11,20 +11,21 @@ sub new {
     bless $self, $class;
 }
 
-sub add_equation {
+sub _add_equation {
     my ($self, $eq) = @_;
     push @{$self->{eqs}}, $eq;
 }
 
 sub new_equation {
     my $self = shift;
-    my $eq = Algorithm::GaussianElimination::GF2::Equation->new(@_);
-    $self->add_equation($eq);
+    my $eq = Algorithm::GaussianElimination::GF2::Equation->_new(@_);
+    $self->_add_equation($eq);
     $eq;
 }
 
 sub _first_1 {
-    $_[0] =~ /[^\0]/g or return undef;
+    pos($_[0]) = 0;
+    $_[0] =~ /[^\0]/g or return length($_[0]) * 8;
     my $end = pos($_[0]) * 8 - 1;
     for my $i (($end - 7) .. $end) {
         return $i if vec($_[0], $i, 1);
@@ -50,72 +51,66 @@ sub solve {
     my $self = shift;
     my $eqs = $self->{eqs};
     my $len = 0;
-    for my $i (0..$#$eqs) {
-        my $pivot = $eqs->[$i];
-        $len = $pivot->[2] if $pivot->[2] > $len;
-        my $v = $pivot->[0];
+    for my $eq (@$eqs) {
+        $len = $eq->[2] if $eq->[2] > $len;
+    }
+    my @v;
+    for my $eq (@$eqs) {
+        push @v, $eq->[0];
+        vec($v[-1], $len, 1) = $eq->[1];
+    }
+
+    for my $i (0..$#v) {
+        my $v = $v[$i];
         my $ix = _first_1($v);
-        if (defined $ix) {
-            for my $j (($i+1)..$#$eqs) {
-                my $target = $eqs->[$j];
-                if (vec($target->[0], $ix, 1)) {
-                    $target->[0] ^= $v;
-                    $target->[1] ^= $pivot->[1];
-                }
+        if ($ix < $len) {
+            for my $j (($i + 1)..$#v) {
+                $v[$j] ^= $v if vec($v[$j], $ix, 1);
             }
         }
-        else {
-            # unsolvable!
-            return if $pivot->[1];
+        elsif (vec($v, $len, 1)) {
+            # inconsistent!
+            return
         }
     }
-    $_->[2] = $len for @$eqs;
+
+    my @sol;
+    $sol[$len] = 1;
+    for my $v (reverse @v) {
+        my $ix = _first_1($v);
+        if ($ix < $len) {
+            my $sol = 0;
+            for my $i (($ix + 1) .. $len) {
+                $sol ^= vec($v, $i, 1) if $sol[$i];
+            }
+            $sol[$ix] = $sol;
+        }
+    }
 
     my @free;
-    my @sol;
-    for my $eq (reverse @$eqs) {
-        my $v = $eq->[0];
-        my $ix = _first_1($v);
-        if (defined $ix) {
-            my $b = $eq->[1];
-            for my $i (($ix + 1) .. ($len - 1)) {
-                if (vec $v, $i, 1) {
-                    if (defined $sol[$i]) {
-                        $b ^= $sol[$i];
-                    }
-                    else {
-                        push @free, $i;
-                        $sol[$i] = 0;
-                    }
-                }
-            }
-            $sol[$ix] = $b;
-        }
-    }
-    for my $i (0..$len - 1) {
+    for my $i (0 .. $len - 1) {
         unless (defined $sol[$i]) {
             push @free, $i;
             $sol[$i] = 0;
         }
     }
+    pop @sol;
+
     return \@sol unless wantarray;
+
     my @base0;
     for my $free (@free) {
         my @sol0;
         $sol0[$_] = 0 for @free;
         $sol0[$free] = 1;
-        for my $eq (reverse @$eqs) {
-            my $v = $eq->[0];
+        for my $v (reverse @v) {
             my $ix = _first_1($v);
-            if (defined $ix) {
-                my $b = 0;
+            if ($ix < $len) {
+                my $sol = 0;
                 for my $i (($ix + 1) .. ($len - 1)) {
-                    if (vec $v, $i, 1) {
-                        defined $sol0[$i] or die "internal error: unexpected free var found";
-                        $b ^= $sol0[$i];
-                    }
+                    $sol ^= vec($v, $i, 1) if $sol0[$i];
                 }
-                $sol0[$ix] = $b;
+                $sol0[$ix] = $sol;
             }
         }
         push @base0, \@sol0;
@@ -125,12 +120,12 @@ sub solve {
 
 package Algorithm::GaussianElimination::GF2::Equation;
 
-sub new {
+sub _new {
     my $class = shift;
     my $self = ['', 0, 0];
     bless $self, $class;
     if (@_) {
-        $self->[1] = pop @_;
+        $self->[1] = (pop @_ ? 1 : 0);
         for my $ix (0..$#_) {
             vec($self->[0], $ix, 1) = $_[$ix]
         }
@@ -146,6 +141,11 @@ sub a {
         return vec($self->[0], $ix, 1) = $v;
     }
     return vec($self->[0], $ix, 1);
+}
+
+sub as {
+    my $self = shift;
+    map { vec($self->[0], $_, 1) } 0..($self->[2] - 1);
 }
 
 sub b {
@@ -171,7 +171,7 @@ sub test_solution {
     my $len = $self->[2];
     my $b = 0;
     for my $ix (0..$#_) {
-        $b += vec($v, $ix, 1) if $_[$ix];
+        $b ^= vec($v, $ix, 1) if $_[$ix];
     }
     return ($b == $self->[1]);
 }
