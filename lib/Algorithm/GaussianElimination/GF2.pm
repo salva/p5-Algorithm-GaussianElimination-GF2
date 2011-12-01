@@ -207,8 +207,8 @@ Algorithm::GaussianElimination::GF2 - Solve linear systems of equations on GF(2)
   $eq1->a(3, 1);
   $eq1->b(1);
   my $eq2 = $age->add_equation;
+  $eq2->a(2, 1);
   $eq2->a(3, 1);
-  $eq2->a(4, 1);
   $eq2->b(0);
   my ($sol, @base0) = $age->solve;
 
