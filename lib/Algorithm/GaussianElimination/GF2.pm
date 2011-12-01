@@ -232,7 +232,7 @@ Those are the interesting methods:
 
 Creates and adds a new equation to the algorithm.
 
-The return value is a reference to the equation object that can be
+The returned value is a reference to the equation object that can be
 used to change the equation coeficients before calling the C<solve>
 method.
 
