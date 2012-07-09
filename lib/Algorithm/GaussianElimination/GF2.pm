@@ -23,6 +23,8 @@ sub new_equation {
     $eq;
 }
 
+*add_equation = \&new_equation;
+
 sub _first_1 {
     pos($_[0]) = 0;
     $_[0] =~ /[^\0]/g or return length($_[0]) * 8;
@@ -194,19 +196,19 @@ Algorithm::GaussianElimination::GF2 - Solve linear systems of equations on GF(2)
   use Algorithm::GaussianElimination::GF2;
 
   my $age = Algorithm::GaussianElimination::GF2->new;
-  $age->add_equation(1, 0, 0, 1 => 1);
-  $age->add_equation(0, 0, 1, 1 => 0);
+  $age->new_equation(1, 0, 0, 1 => 1);
+  $age->new_equation(0, 0, 1, 1 => 0);
   my ($sol, @base0) = $age->solve;
 
   # or you can also create the equations setting elements at given
   # positions:
 
   my $age = Algorithm::GaussianElimination::GF2->new;
-  my $eq1 = $age->add_equation;
+  my $eq1 = $age->new_equation;
   $eq1->a(0, 1);
   $eq1->a(3, 1);
   $eq1->b(1);
-  my $eq2 = $age->add_equation;
+  my $eq2 = $age->new_equation;
   $eq2->a(2, 1);
   $eq2->a(3, 1);
   $eq2->b(0);
@@ -226,9 +228,9 @@ Those are the interesting methods:
 
 =item $age = Algorithm::GaussianElimination::GF2->new;
 
-=item $eq = $age->add_equation(@a, $b)
+=item $eq = $age->new_equation(@a, $b)
 
-=item $eq = $age->add_equation()
+=item $eq = $age->new_equation()
 
 Creates and adds a new equation to the algorithm.
 
@@ -302,7 +304,7 @@ for GF(2).
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2011 by Salvador FandiE<ntilde>o (sfandino@yahoo.com)
+Copyright (C) 2011, 2012 by Salvador FandiE<ntilde>o (sfandino@yahoo.com)
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.14.2 or,
